@@ -1,11 +1,8 @@
 require("dotenv").config();
 
-const config = require("./config.json");
 const mongoose = require("mongoose");
 
-//mongoose.connect(config.connectionString);
-
-const MONGO_URI = process.env.MONGO_URI || config.connectionString;
+const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
@@ -24,18 +21,9 @@ const {authenticateToken} = require("./utilities");
 
 app.use(express.json());
 
-/*app.use(
-    cors({
-        origin: "*",
-    })
-);*/
-
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://your-frontend.vercel.app"
-    ],
+    origin: "*",
     credentials: true,
   })
 );
