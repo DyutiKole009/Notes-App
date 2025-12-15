@@ -14,33 +14,26 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const token = localStorage.getItem("token");
+  /* ---------- LOGOUT ---------- */
+  const handleLogout = () => {
+    localStorage.clear();
+    setIsLoggedIn(false); // 🔥 router will kick user out
+  };
 
-  /* 🔥 HARD GUARD: kick out if token is missing */
+  /* ---------- GET USER ---------- */
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      navigate("/login", { replace: true });
-    }
-  }, [navigate]);
-
-  /* ---------------- GET USER ---------------- */
-  useEffect(() => {
-    if (!token) return;
-
     const fetchUser = async () => {
       try {
         const res = await axiosInstance.get("/get-user");
         setUserInfo(res.data.user);
       } catch (err) {
-        console.error("Failed to fetch user", err);
-        handleLogout(); // force logout if token invalid
+        handleLogout(); // invalid token
       }
     };
-
     fetchUser();
-  }, [token]);
+  }, []);
 
-  /* ---------------- NOTES ---------------- */
+  /* ---------- NOTES ---------- */
   const getAllNotes = async () => {
     const res = await axiosInstance.get("/get-all-notes");
     setNotes(res.data.note || []);
@@ -60,38 +53,27 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
   };
 
   useEffect(() => {
-    if (token) getAllNotes();
-  }, [token]);
-
-  /* ---------------- LOGOUT ---------------- */
-  const handleLogout = () => {
-    localStorage.clear();
-    setIsLoggedIn(false);
-    navigate("/login", { replace: true });
-  };
+    getAllNotes();
+  }, []);
 
   const isDashboard = location.pathname.includes("dashboard");
 
   return (
     <>
-      {token && (
-        <Navbar
-          userInfo={userInfo}
-          onMenuClick={() => setSidebarOpen((p) => !p)}
-          showSearch={isDashboard}
-          onSearchNote={onSearchNote}
-          handleClearSearch={handleClearSearch}
-        />
-      )}
+      <Navbar
+        userInfo={userInfo}
+        onMenuClick={() => setSidebarOpen((p) => !p)}
+        showSearch={isDashboard}
+        onSearchNote={onSearchNote}
+        handleClearSearch={handleClearSearch}
+      />
 
-      {token && (
-        <Sidebar
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          onLogout={handleLogout}
-          navigate={navigate}
-        />
-      )}
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onLogout={handleLogout}
+        navigate={navigate}
+      />
 
       <div className="mt-20 px-6 md:px-10">
         <Outlet context={{ notes, isSearch, refreshNotes: getAllNotes }} />
