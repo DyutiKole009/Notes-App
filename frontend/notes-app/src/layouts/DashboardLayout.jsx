@@ -16,6 +16,13 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
 
   const token = localStorage.getItem("token");
 
+  /* 🔥 HARD GUARD: kick out if token is missing */
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
+
   /* ---------------- GET USER ---------------- */
   useEffect(() => {
     if (!token) return;
@@ -26,7 +33,7 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
         setUserInfo(res.data.user);
       } catch (err) {
         console.error("Failed to fetch user", err);
-        handleLogout(); // 🔥 force logout on token failure
+        handleLogout(); // force logout if token invalid
       }
     };
 
@@ -56,12 +63,12 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
     if (token) getAllNotes();
   }, [token]);
 
+  /* ---------------- LOGOUT ---------------- */
   const handleLogout = () => {
-  localStorage.clear();      // storage
-  setIsLoggedIn(false);      // 🔥 React state (MANDATORY)
-  navigate("/login", { replace: true });
-};
-
+    localStorage.clear();
+    setIsLoggedIn(false);
+    navigate("/login", { replace: true });
+  };
 
   const isDashboard = location.pathname.includes("dashboard");
 
@@ -74,7 +81,6 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
           showSearch={isDashboard}
           onSearchNote={onSearchNote}
           handleClearSearch={handleClearSearch}
-          setIsLoggedIn={setIsLoggedIn}   // 🔥 PASS DOWN
         />
       )}
 
