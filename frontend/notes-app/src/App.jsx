@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -12,7 +12,12 @@ import Login from "./pages/Login/Login";
 import SignUp from "./pages/SignUp/SignUp";
 
 const App = () => {
-  const isLoggedIn = !!localStorage.getItem("token");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Sync auth state on load
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem("token"));
+  }, []);
 
   return (
     <Router>
@@ -20,30 +25,39 @@ const App = () => {
 
         <Route
           path="/login"
-          element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login />}
+          element={
+            isLoggedIn
+              ? <Navigate to="/dashboard" replace />
+              : <Login setIsLoggedIn={setIsLoggedIn} />
+          }
         />
 
         <Route
           path="/signup"
-          element={isLoggedIn ? <Navigate to="/dashboard" /> : <SignUp />}
+          element={
+            isLoggedIn
+              ? <Navigate to="/dashboard" replace />
+              : <SignUp />
+          }
         />
 
         <Route
           path="/"
-          element={isLoggedIn ? <DashboardLayout /> : <Navigate to="/login" />}
+          element={
+            isLoggedIn
+              ? <DashboardLayout setIsLoggedIn={setIsLoggedIn} />
+              : <Navigate to="/login" replace />
+          }
         >
-
-          <Route index element={<Navigate to="dashboard" />} />
-
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Home />} />
           <Route path="recent" element={<Recent />} />
           <Route path="insights" element={<Insights />} />
-
           <Route path="ocr" element={<OCR />} />
           <Route path="voice-notes" element={<VoiceNotes />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
     </Router>
