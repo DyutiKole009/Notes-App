@@ -5,7 +5,7 @@ import axiosInstance from "../utils/axiosInstance";
 import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 
-const DashboardLayout = ({ setIsLoggedIn }) => {
+const DashboardLayout = ({ setIsLoggedIn, isLoggedIn }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notes, setNotes] = useState([]);
   const [isSearch, setIsSearch] = useState(false);
@@ -14,30 +14,34 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const token = localStorage.getItem("token");
+  /* 🔥 REAL ROUTE GUARD (REACTIVE) */
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login", { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
 
   /* ---------- LOGOUT ---------- */
   const handleLogout = () => {
     localStorage.clear();
-    setIsLoggedIn(false);
-    navigate("/login", { replace: true });
+    setIsLoggedIn(false);   // 🔥 this triggers redirect above
   };
 
   /* ---------- GET USER ---------- */
   useEffect(() => {
-    if (!token) return;
+    if (!isLoggedIn) return;
 
     const fetchUser = async () => {
       try {
         const res = await axiosInstance.get("/get-user");
         setUserInfo(res.data.user);
       } catch (err) {
-        handleLogout(); // 🔥 auto logout if token invalid
+        handleLogout(); // invalid token
       }
     };
 
     fetchUser();
-  }, [token]);
+  }, [isLoggedIn]);
 
   /* ---------- NOTES ---------- */
   const getAllNotes = async () => {
@@ -59,14 +63,14 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
   };
 
   useEffect(() => {
-    if (token) getAllNotes();
-  }, [token]);
+    if (isLoggedIn) getAllNotes();
+  }, [isLoggedIn]);
 
   const isDashboard = location.pathname.includes("dashboard");
 
   return (
     <>
-      {token && (
+      {isLoggedIn && (
         <Navbar
           userInfo={userInfo}
           onMenuClick={() => setSidebarOpen((p) => !p)}
@@ -76,7 +80,7 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
         />
       )}
 
-      {token && (
+      {isLoggedIn && (
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
