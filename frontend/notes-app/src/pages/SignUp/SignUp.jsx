@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Passwordinput from "../../components/Input/Passwordinput";
 import { validateEmail } from "../../utils/helper";
-
 import axiosInstance from "../../utils/axiosInstance";
 
 const SignUp = () => {
@@ -49,8 +48,15 @@ const SignUp = () => {
         return;
       }
 
-      // ✅ Successful signup → redirect to login
-      navigate("/login");
+      // ✅ AUTO LOGIN
+      if (response.data?.accessToken) {
+        localStorage.setItem("token", response.data.accessToken);
+        navigate("/dashboard");
+      } else {
+        // Safety fallback
+        setError("Account created, but login failed. Please login manually.");
+        navigate("/login");
+      }
 
     } catch (err) {
       if (err.response?.data?.message) {
