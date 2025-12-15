@@ -17,6 +17,7 @@ const DashboardLayout = ({ setIsLoggedIn }) => {
   /* ---------- LOGOUT ---------- */
   const handleLogout = () => {
     localStorage.clear();
+    sessionStorage.clear();
     setIsLoggedIn(false); // 🔥 router will kick user out
   };
 
